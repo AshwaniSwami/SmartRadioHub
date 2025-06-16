@@ -67,8 +67,7 @@ export const scripts = pgTable("scripts", {
   reviewComments: text("review_comments"),
   broadcastDate: date("broadcast_date"),
   audioLink: varchar("audio_link", { length: 500 }),
-  audioFileName: varchar("audio_file_name", { length: 255 }),
-  audioFileSize: integer("audio_file_size"),
+
   isArchived: boolean("is_archived").default(false),
 });
 
