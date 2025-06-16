@@ -1,0 +1,197 @@
+
+Project Vision: SMART Radio Content Hub (The "Charming & Functional" Edition)
+Overall Objective: To develop a cutting-edge, highly intuitive, and visually stunning web-based Content Management Platform for SMART Radio. This platform will serve as the central nervous system for their content lifecycle, from script creation to broadcast and archival. Our goal is to achieve significant improvements in efficiency, organization, and accessibility for all team members, providing a truly delightful user experience.
+
+Key Design Principles ("Looks Like a Charm"):
+
+Modern & Minimalist: Clean lines, ample whitespace, uncluttered interface.
+Intuitive & User-Friendly: Clear navigation, logical flows, minimal clicks for common tasks.
+Consistent Branding: A cohesive look and feel achieved through Material-UI's theming system.
+Responsive: Flawless usability and appearance across all devices (desktop, tablet, mobile).
+Clear Feedback: Visual cues for actions, loading states, and validation errors.
+Core Functional Requirements ("Functions Well"):
+
+User Authentication & Authorization: Secure login/logout with distinct user roles.
+User Roles: Scriptwriter, Program Manager, Radio Producer, Administrator.
+Script Management:
+Centralized repository for all scripts.
+Rich text editor for content creation/editing.
+Comprehensive metadata (Title, Episode No., Project, Topic(s), Author, Dates).
+Basic version control (tracking revisions).
+Workflow & Status Tracking:
+Clear statuses: Draft, Submitted, Under Review, Approved, Needs Revision, Recorded, Archived.
+Role-based status transitions.
+Feedback mechanism for revisions.
+Recording & Archival:
+Ability to attach Google Drive URLs for recorded audio.
+Broadcast date tracking.
+Archiving feature for completed episodes.
+Search & Filtering: Robust search (full-text and metadata) and filtering across all content.
+Notifications: In-app notifications for key workflow events.
+Technology Stack:
+
+Backend: Python with Django & Django REST Framework
+Database: PostgreSQL (Replit's built-in PostgreSQL for ease of setup)
+Frontend: React.js with Material-UI (MUI)
+Development Environment: Replit (leveraging its AI Agent for "vibe coding")
+Part 1: The Initial Master Vision Prompt for Replit AI
+This is the first and most comprehensive prompt you will give to Replit when you create a new project. It sets the overall context and asks Replit's AI Agent to scaffold the entire project.
+
+How to use this:
+
+Go to replit.com and log in.
+Click on + Create Repl.
+Select the "Python" template (or a "Full Stack" template if available and clear, but Python usually works best for Django initiation).
+Give your Repl a name (e.g., SMART-Radio-Content-Hub).
+In the "Describe your app" prompt (or the initial chat window that appears for Replit Agent), paste the following text exactly as it is.
+<!-- end list -->
+
+Project Title: SMART Radio Content Hub
+
+Objective:
+Build a modern, clean, and fully functional web-based Content Management Platform for SMART Radio. This platform will streamline the entire content lifecycle: from script creation, through a multi-stage approval workflow, to recording and archival. The goal is to provide a superior user experience, improve efficiency, and ensure all radio content is easily searchable and accessible.
+
+Technology Stack:
+- Backend: Python with Django and Django REST Framework.
+- Database: PostgreSQL (use Replit's integrated PostgreSQL for setup and production).
+- Frontend: React.js with Material-UI (MUI) for a clean, modern, and responsive user interface.
+
+Core Functional Requirements (MVP & Beyond):
+1.  **User Management & Authentication:**
+    * Secure user login, registration (optional for MVP, admin can create), and logout.
+    * Define and manage user roles: Scriptwriter, Program Manager, Radio Producer, Administrator.
+    * Implement role-based access control for features and data.
+2.  **Script Management Module:**
+    * **Create/Edit Script:** A user-friendly form with rich text editing capabilities for script content. Fields include: Title, Episode Number, Associated Project, Topic(s) (multi-select), Author (auto-filled), Submission Date.
+    * **Script Listing:** A dynamic, filterable, and sortable table/list showing all scripts relevant to the user's role.
+    * **Script Detail View:** A dedicated page to view full script content and metadata.
+    * **Version Control:** Basic tracking of script revisions.
+3.  **Workflow & Status Tracking:**
+    * Implement a clear status system for scripts: Draft -> Submitted -> Under Review -> Approved -> Needs Revision -> Recorded -> Archived.
+    * Define specific user role permissions for each status transition (e.g., only Program Manager can "Approve").
+    * Allow Program Managers to add "review comments" when sending a script back for revision.
+4.  **Recording & Archival:**
+    * Ability for Radio Producers to mark scripts as "Recorded" and attach a Google Drive URL for the audio file, along with the broadcast date.
+    * Archiving functionality for completed episodes.
+5.  **Search & Filtering:**
+    * A robust search bar (full-text search on title/content and keyword search).
+    * Advanced filters by Project, Topic, Status, Author, and Broadcast Date Range.
+6.  **Notifications:** In-app notifications for key workflow events (e.g., "Your script was approved," "Script needs revision").
+
+Desired Aesthetics & User Experience ("Looks Like a Charm"):
+-   **Modern & Clean:** Prioritize simplicity, ample whitespace, and an uncluttered design.
+-   **Consistent Theming:** Use Material-UI's theming system to establish a consistent color palette (e.g., professional blues/grays with a subtle accent), typography, and spacing throughout the application.
+-   **Intuitive Navigation:** Clear, consistent, and easy-to-understand navigation (sidebar or top bar).
+-   **Responsive Design:** The application must look and function flawlessly on desktop, tablet, and mobile devices using Material-UI's responsive features.
+-   **Interactive Feedback:** Implement loading indicators, success/error messages (e.g., using Material-UI Snackbar/Alerts), and clear visual cues for user interactions.
+
+**Initial Request to Replit Agent:**
+"Please scaffold this full-stack Django and React (with Material-UI) project within this Replit workspace. Set up the basic file structure for both backend and frontend, including necessary `requirements.txt` and `package.json` files. Configure `Procfile` to run both servers. Set up the Django backend to connect to Replit's integrated PostgreSQL database. For the frontend, ensure Material-UI is installed and demonstrate a basic themed Material-UI component."
+Part 2: Step-by-Step Iterative Vibe-Coding Missions (Sequential Prompts)
+After you've given Replit the Master Vision Prompt above, it will start generating the initial project structure. WAIT for it to complete this initial setup.
+
+Once it's done, you'll see a basic structure. Now, we'll give it more specific, step-by-step instructions. Do these one by one, waiting for each to complete, reviewing the code, and testing before moving to the next.
+
+Mission 1.1: Refine Core Data Models (Backend - Django)
+Goal: Define all backend models with proper relationships and fields.
+
+Prompt (for backend/content_hub/models.py):
+"Okay, now let's define the core models accurately in backend/content_hub/models.py.
+
+Project Model: Create a Project model with name (unique CharField, max 255), description (optional TextField), and created_at/updated_at timestamps. Add __str__ and Meta class for ordering by name.
+Topic Model: Create a Topic model with a unique name (CharField, max 100). Add __str__ and Meta class for ordering.
+Profile Model (for User Roles): Create a Profile model with a OneToOneField to Django's built-in User model (on_delete=CASCADE, related_name='profile'). Add a role field (CharField, max 30) with specific choices for 'scriptwriter', 'program_manager', 'radio_producer', 'admin' (default 'scriptwriter'). Include __str__ and auto-create/save signals using post_save for new users.
+Script Model: Create the central Script model. It needs:
+title (CharField, max 255)
+episode_number (optional CharField, max 50)
+author (ForeignKey to User, on_delete=models.PROTECT, related_name='authored_scripts')
+project (ForeignKey to Project, on_delete=models.PROTECT, related_name='scripts')
+content (optional TextField, to store HTML)
+status (CharField, max 30, with choices: 'draft', 'submitted', 'under_review', 'approved', 'needs_revision', 'recorded', 'archived', default 'draft')
+submission_date (DateTimeField, auto_now_add=True)
+last_updated (DateTimeField, auto_now=True)
+review_comments (optional TextField)
+broadcast_date (optional DateField)
+audio_link (optional URLField, max 500)
+topics (ManyToManyField to Topic, related_name='scripts')
+is_archived (BooleanField, default False)
+Add __str__ and Meta for ordering by -submission_date and unique_together for project and episode_number."
+Your Action after AI generates code:
+
+Review the generated models.py carefully.
+Run Migrations: Open the Replit Shell (or Bash) tab and type:
+Bash
+
+cd backend
+python manage.py makemigrations content_hub
+python manage.py migrate
+Create Superuser:
+Bash
+
+python manage.py createsuperuser
+(Set a strong password).
+Test Django Admin: Click the "Run" button in Replit. Once the webview appears, add /admin/ to the URL (e.g., https://your-repl-name.replit.dev/admin/). Log in with your superuser and verify all models are visible and you can create/edit entries. Crucially, go to Users, click your superuser, and make sure its linked Profile has the 'Admin' role.
+Mission 1.2: Implement Authentication & Basic APIs (Backend)
+Goal: Securely allow users to log in and access protected API endpoints.
+
+Prompt (for backend/smart_radio_backend/settings.py):
+"In backend/smart_radio_backend/settings.py, configure djangorestframework-simplejwt for JWT authentication.
+
+Add 'rest_framework_simplejwt' to INSTALLED_APPS.
+Set DEFAULT_AUTHENTICATION_CLASSES in REST_FRAMEWORK to use JWTAuthentication and SessionAuthentication.
+Define SIMPLE_JWT settings: ACCESS_TOKEN_LIFETIME to 5 minutes, REFRESH_TOKEN_LIFETIME to 1 day, ROTATE_REFRESH_TOKENS, USE_BLACK_LIST, and AUTH_HEADER_TYPES as 'Bearer'.
+Ensure CORS_ALLOWED_ORIGINS is correctly configured to allow the Replit frontend URL (it will typically be https://<your-repl-slug>.replit.dev). Replit's os.environ.get('REPL_SLUG') variable can help here." (Review settings.py, save.)
+Prompt (for backend/smart_radio_backend/urls.py):
+"In backend/smart_radio_backend/urls.py, add the necessary URL patterns for JWT token obtain, refresh, and verify views from rest_framework_simplejwt. Use paths like /api/token/, /api/token/refresh/, and /api/token/verify/. Also, include a placeholder path('api/', include('content_hub.urls')) for our app's API views later."
+(Review urls.py, save. Restart Replit's Run for changes to take effect.)
+
+Test Backend Authentication:
+
+Use Replit's Shell to make a curl request to http://localhost:8000/api/token/.
+Bash
+
+curl -X POST -H "Content-Type: application/json" -d '{"username": "your_superuser_username", "password": "your_superuser_password"}' http://localhost:8000/api/token/
+You should get back access and refresh tokens. This confirms JWT setup.
+Mission 2: User Interface Foundation & Dashboard (Frontend - React & MUI)
+Goal: Create the basic React layout, apply Material-UI theming, and build the login page.
+
+Prompt (for frontend/src/theme.js):
+"Create a new file frontend/src/theme.js. Define and export a custom Material-UI (MUI) theme using createTheme.
+
+Palette: Set primary.main to a professional blue (e.g., #1976d2), secondary.main to a contrasting subtle green (e.g., #4caf50), and background.default to a light grey (e.g., #f4f6f8).
+Typography: Define custom font sizes for h1, h2, body1, button to ensure clean hierarchy. Use a simple sans-serif font stack.
+Components: Add basic overrides for MuiButton to ensure disableElevation by default and borderRadius for MuiPaper/MuiCard to be 8px for a softer look.
+Include a basic light mode setup. We can add dark mode later."
+Prompt (for frontend/src/App.jsx):
+"In frontend/src/App.jsx, apply the custom Material-UI theme globally using ThemeProvider. Set up react-router-dom for navigation:
+
+The /login path should render a LoginPage component (which we'll create next).
+The /dashboard path should be a PrivateRoute that renders a DashboardPage component (which we'll also create).
+Ensure all necessary MUI and React Router imports are present."
+Prompt (for frontend/src/pages/LoginPage.jsx):
+"Create frontend/src/pages/LoginPage.jsx. Design a modern, clean login form using Material-UI components:
+
+Use a Box or Paper component centered on the screen.
+Include two TextField components for 'Username' and 'Password'.
+An MUI Button for 'Login'.
+Handle form state using useState.
+On submission, send credentials to http://localhost:8000/api/token/ using axios.
+Store access and refresh tokens from the successful response in localStorage.
+Use useNavigate from react-router-dom to redirect to /dashboard on success.
+Display Alert or Snackbar for login errors (e.g., "Invalid credentials").
+Ensure the design is responsive and uses Material-UI theming."
+Prompt (for frontend/src/utils/PrivateRoute.jsx):
+"Create frontend/src/utils/PrivateRoute.jsx. This will be a reusable React component that enforces authentication for routes. It should:
+
+Check for an access_token in localStorage.
+If the token is present, render its children (<Outlet /> from react-router-dom).
+If no token is found, redirect to /login using useNavigate.
+Show a small MUI CircularProgress loading indicator while checking the token."
+Prompt (for frontend/src/pages/DashboardPage.jsx):
+"Create frontend/src/pages/DashboardPage.jsx. Design a welcoming, clean dashboard using Material-UI components:
+
+Use an MUI AppBar at the top with the app title and a placeholder for user's name and a logout Button.
+Implement a persistent MUI Drawer (sidebar) on the left for main navigation links (e.g., 'My Scripts', 'Create Script', 'Scripts for Review', 'All Projects', 'Archived Content'). Use MUI List and ListItemButton for navigation.
+The main content area should use MUI Box or Grid for layout.
+Fetch and display the logged-in user's username and role (you'll need a simple Django API endpoint for user details later, for now, just use placeholder).
+Make sure the layout is responsive."
