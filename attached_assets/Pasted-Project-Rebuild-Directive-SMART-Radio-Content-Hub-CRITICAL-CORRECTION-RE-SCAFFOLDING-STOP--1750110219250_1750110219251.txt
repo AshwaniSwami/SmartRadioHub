@@ -1,0 +1,95 @@
+Project Rebuild Directive: SMART Radio Content Hub
+
+**CRITICAL CORRECTION & RE-SCAFFOLDING:**
+STOP. Your previous generation incorrectly used React with Express.js (FULLSTACK_JS). This is not the required technology stack.
+I explicitly require a **Django backend (Python)** with **Django REST Framework** and a **React.js frontend** using **Material-UI (MUI)**.
+The database MUST be **PostgreSQL**, utilizing Replit's integrated PostgreSQL database service for both development and production deployment within this Repl.
+
+**Completely replace the existing Express.js backend implementation with a new, fully functional Django backend.** The React frontend should be adapted to communicate with this new Django API. Re-setup the `Procfile` and project structure accordingly, ensuring both Django and React servers run simultaneously and are accessible through the Replit webview.
+
+**Overall Objective for the New Build:**
+Develop a fully functional, modern, clean, and aesthetically superior web-based Content Management Platform for SMART Radio. It must provide the best possible user experience, streamline content workflow, and ensure all features mentioned below are working perfectly from end-to-end.
+
+**Core Functional Requirements (All Must Be Fully Functional):**
+
+1.  **User Management & Authentication:**
+    * Secure user login and logout.
+    * Implement user roles: `Scriptwriter`, `Program Manager`, `Radio Producer`, `Administrator`.
+    * **Role-based Access Control:** Ensure different roles have precise permissions for viewing, creating, editing, and transitioning script statuses.
+    * Admin users should be able to create and manage other users and their roles via the Django Admin panel.
+
+2.  **Script Management Module:**
+    * **Script Creation & Editing:**
+        * A dedicated, user-friendly form.
+        * Integrate a **Rich Text Editor (e.g., react-quill)** for `script content`.
+        * **Fix Bug:** Ensure `save files` functionality from the rich text editor works reliably without error screens.
+        * Fields required: `Title`, `Episode Number` (optional), `Associated Project` (dropdown, fetched from backend), `Topic(s)` (multi-select, fetched from backend), `Author` (auto-filled to current user), `Submission Date` (auto), `Last Updated` (auto).
+    * **Script Listing:**
+        * A dynamic, responsive, filterable, and sortable table/list displaying scripts relevant to the logged-in user's role.
+        * Columns should include: Title, Author, Project, Status, Last Updated.
+        * Implement filters by Project, Topic, Status, and Author.
+    * **Script Detail View:** A clean, dedicated page to view full script content, metadata, and workflow actions.
+
+3.  **Workflow & Status Tracking:**
+    * Implement the status system: `Draft` -> `Submitted` -> `Under Review` -> `Approved` -> `Needs Revision` -> `Recorded` -> `Archived`.
+    * **Enforce Role-Based Transitions:**
+        * Scriptwriter: `Draft` to `Submitted`.
+        * Program Manager: `Submitted` to `Approved` or `Needs Revision` (must provide comments for 'Needs Revision').
+        * Radio Producer: `Approved` to `Recorded`.
+        * Administrator: Can perform any transition.
+    * Ensure proper API endpoints and frontend logic for these transitions.
+
+4.  **Recording & Archival:**
+    * **Audio Attachment (Crucial New Feature):** Provide an option for Radio Producers to either:
+        1.  Input a **Google Drive URL** for the recorded audio.
+        2.  **Directly Upload a Local Audio File** to the platform. The backend (Django) must handle file storage. Implement frontend UI for file selection and upload progress.
+    * Include a `Broadcast Date` field.
+    * Implement archiving functionality (e.g., an `is_archived` boolean field on Script model that can be toggled).
+
+5.  **Search & Filtering (Advanced):**
+    * A robust, prominent search bar (full-text search on script titles and content, keyword search on topics).
+    * Advanced filters by Project, Topic, Status, Author, and Broadcast Date Range.
+
+6.  **Notifications:**
+    * Implement in-app notifications for key workflow events (e.g., "Your script 'X' has been approved!", "Script 'Y' needs revision (see comments)").
+
+**Desired Aesthetics & User Experience ("Looks Like a Charm"):**
+
+-   **Modern, Clean, & Professional:** Prioritize a minimalist design with ample whitespace. All elements must be perfectly aligned and visually cohesive.
+-   **Consistent Theming (Material-UI):**
+    * Apply a comprehensive Material-UI theme globally.
+    * Define a **professional and calming color palette** (e.g., shades of blue/grey as primary, subtle green/orange as accents).
+    * Ensure **consistent typography** (font family, sizes, weights) and **consistent spacing** throughout the application using MUI's theme values.
+    * Implement **rounded corners** for all cards, buttons, text fields, and other Material-UI components for a softer, modern look.
+-   **Intuitive Navigation:** Clear, consistent sidebar or top-bar navigation that is easy to understand and use.
+-   **Fully Responsive Design:** The entire application must be seamlessly usable and visually appealing on **desktop, tablet, and mobile devices**. Utilize Material-UI's `Grid` system and responsive props extensively.
+-   **Interactive Feedback:**
+    * Implement prominent **loading indicators** (e.g., MUI `CircularProgress`, `Skeleton` loaders).
+    * Provide clear **success/error messages** using Material-UI `Snackbar` or `Alert` components for all user actions (e.g., successful save, validation errors, permission denied).
+    * Ensure intuitive hover states, button ripples, and subtle transitions for an enhanced user experience.
+-   **Dark Mode Toggle (New UI Feature):**
+    * Add a prominent toggle switch (e.g., in the AppBar/header) that allows users to seamlessly switch between **light and dark themes**. Ensure both themes are aesthetically pleasing and respect the overall design principles.
+
+**Replit-Specific Instructions:**
+
+-   **PostgreSQL Database:** Use Replit's integrated PostgreSQL database. Configure the Django backend to connect to it using the environment variables provided by Replit's database service.
+-   **Procfile:** Create and correctly configure a `Procfile` at the root of the Repl to run both the Django backend server and the React frontend development server concurrently.
+-   **File Structure:** Maintain a clean `backend/` and `frontend/` directory structure.
+-   **Dependencies:** Ensure all necessary `requirements.txt` (Python) and `package.json` (Node.js/React) dependencies are correctly listed for Replit to install automatically.
+
+**Goal:** Provide a **complete and fully functional codebase** that addresses all the above requirements, demonstrating end-to-end functionality, robust error handling, and a polished user interface.
+
+
+
+
+
+
+
+
+
+
+
+Deep Research
+
+Canvas
+
