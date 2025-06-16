@@ -113,7 +113,21 @@ export class DatabaseStorage implements IStorage {
   }): Promise<ScriptWithDetails[]> {
     const query = db
       .select({
-        script: scripts,
+        script: {
+          id: scripts.id,
+          title: scripts.title,
+          episodeNumber: scripts.episodeNumber,
+          content: scripts.content,
+          status: scripts.status,
+          projectId: scripts.projectId,
+          authorId: scripts.authorId,
+          createdAt: scripts.createdAt,
+          lastUpdated: scripts.lastUpdated,
+          reviewComments: scripts.reviewComments,
+          broadcastDate: scripts.broadcastDate,
+          audioLink: scripts.audioLink,
+          isArchived: scripts.isArchived,
+        },
         author: users,
         project: projects,
       })
