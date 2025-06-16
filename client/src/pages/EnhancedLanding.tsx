@@ -117,7 +117,7 @@ export default function EnhancedLanding() {
         {/* Features Section */}
         <Grid container spacing={4} sx={{ mb: 8 }}>
           {features.map((feature, index) => (
-            <Grid xs={12} md={4} key={index}>
+            <Grid key={index} size={{ xs: 12, md: 4 }}>
               <Card
                 elevation={0}
                 sx={{
@@ -160,7 +160,7 @@ export default function EnhancedLanding() {
               'Recorded',
               'Archived',
             ].map((status, index) => (
-              <Grid item key={index}>
+              <Grid key={index}>
                 <Box
                   sx={{
                     display: 'flex',

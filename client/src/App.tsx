@@ -5,10 +5,12 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import Landing from "@/pages/Landing";
+import EnhancedLanding from "@/pages/EnhancedLanding";
 import Dashboard from "@/pages/Dashboard";
 import Scripts from "@/pages/Scripts";
 import ScriptEditor from "@/pages/ScriptEditor";
 import NotFound from "@/pages/not-found";
+import ThemeProvider from "@/components/ThemeProvider";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -16,7 +18,7 @@ function Router() {
   return (
     <Switch>
       {isLoading || !isAuthenticated ? (
-        <Route path="/" component={Landing} />
+        <Route path="/" component={EnhancedLanding} />
       ) : (
         <>
           <Route path="/" component={Dashboard} />
@@ -32,12 +34,14 @@ function Router() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Router />
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Router />
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }
 
