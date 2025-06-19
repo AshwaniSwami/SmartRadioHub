@@ -6,10 +6,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import Landing from "@/pages/Landing";
 import EnhancedLanding from "@/pages/EnhancedLanding";
-import Dashboard from "@/pages/Dashboard";
-import Scripts from "@/pages/Scripts";
-import Projects from "@/pages/Projects";
+import EnhancedDashboard from "@/pages/EnhancedDashboard";
+import EnhancedScripts from "@/pages/EnhancedScripts";
+import EnhancedProjects from "@/pages/EnhancedProjects";
 import SimpleScriptEditor from "@/pages/SimpleScriptEditor";
+import ScriptViewer from "@/pages/ScriptViewer";
 import NotFound from "@/pages/not-found";
 import ThemeProvider from "@/components/ThemeProvider";
 
@@ -22,10 +23,11 @@ function Router() {
         <Route path="/" component={EnhancedLanding} />
       ) : (
         <>
-          <Route path="/" component={Dashboard} />
-          <Route path="/scripts" component={Scripts} />
-          <Route path="/projects" component={Projects} />
+          <Route path="/" component={EnhancedDashboard} />
+          <Route path="/scripts" component={EnhancedScripts} />
+          <Route path="/projects" component={EnhancedProjects} />
           <Route path="/scripts/new" component={SimpleScriptEditor} />
+          <Route path="/scripts/:id" component={ScriptViewer} />
           <Route path="/scripts/:id/edit" component={SimpleScriptEditor} />
         </>
       )}

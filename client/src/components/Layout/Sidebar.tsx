@@ -43,7 +43,7 @@ export default function Sidebar() {
   };
 
   return (
-    <div className="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg border-r border-gray-200">
+    <div className="flex-shrink-0 w-64 bg-gradient-to-b from-slate-900 to-slate-800 shadow-2xl border-r border-slate-700">
       {/* Logo Section */}
       <div className="flex items-center justify-center h-16 px-6 border-b border-gray-200">
         <div className="flex items-center space-x-3">
