@@ -80,15 +80,21 @@ export default function EnhancedProjects() {
   });
 
   // Fetch project files
-  const { data: serverProjectFiles = [], isLoading: filesLoading, refetch: refetchFiles } = useQuery({
-    queryKey: ['project-files', selectedProject?.id],
-    queryFn: () => apiRequest('GET', `/api/projects/${selectedProject?.id}/files`),
+  const { data: serverProjectFiles, refetch: refetchFiles } = useQuery({
+    queryKey: ["project-files", selectedProject?.id],
+    queryFn: () => selectedProject ? apiRequest("GET", `/api/projects/${selectedProject.id}/files`) : Promise.resolve([]),
     enabled: !!selectedProject,
+    staleTime: 0 // Always refetch to get latest files
   });
 
   const handleFilesUploaded = (files: any[]) => {
-    // Refetch project files when new files are uploaded
-    refetchFiles();
+    console.log("Files uploaded:", files);
+    // Refresh the file list immediately
+    if (selectedProject) {
+      queryClient.invalidateQueries({ queryKey: ["project-files", selectedProject.id] });
+      // Also refetch to get updated data
+      queryClient.refetchQueries({ queryKey: ["project-files", selectedProject.id] });
+    }
   };
 
   const filteredScripts = useMemo(() => {

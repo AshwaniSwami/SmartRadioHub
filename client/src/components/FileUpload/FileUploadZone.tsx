@@ -87,12 +87,14 @@ export default function FileUploadZone({
       // Ensure response is an array and has proper structure
       const newFiles = Array.isArray(response) ? response : [];
       
-      // Update local state
+      // Update local state with all files (existing + new)
       const allFiles = [...uploadedFiles, ...newFiles];
       setUploadedFiles(allFiles);
       
-      // Notify parent component with new files
-      onFilesUploaded(newFiles);
+      // Notify parent component - pass all files for complete refresh
+      onFilesUploaded(allFiles);
+      
+      console.log('Successfully uploaded files:', newFiles);
     } catch (error) {
       console.error('Upload failed:', error);
       alert('Upload failed. Please try again.');
