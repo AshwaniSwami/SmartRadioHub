@@ -123,7 +123,7 @@ export default function Dashboard() {
                               <span>•</span>
                               <span>{script.author?.firstName} {script.author?.lastName}</span>
                               <span>•</span>
-                              <span>{new Date(script.lastUpdated).toRelativeTimeString()}</span>
+                              <span>{new Date(script.lastUpdated).toLocaleDateString()}</span>
                             </div>
                           </div>
                           <div className="flex items-center space-x-2">
