@@ -323,6 +323,10 @@ export class DatabaseStorage implements IStorage {
     async saveProjectFiles(projectId: number, files: any[]): Promise<any[]> {
       // For now, we'll store file metadata in memory
       // In production, you'd store this in a database and the actual files in object storage
+      
+      if (!files || !Array.isArray(files)) {
+        return [];
+      }
   
       const projectFiles = this.projectFiles.get(projectId) || [];
       const newFiles = files.map((file, index) => ({

@@ -166,10 +166,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { topicIds, ...scriptBody } = req.body;
 
+      // Clean up empty date fields
+      const cleanedScriptBody = { ...scriptBody };
+      if (cleanedScriptBody.dueDate === '' || cleanedScriptBody.dueDate === null) {
+        delete cleanedScriptBody.dueDate;
+      }
+      if (cleanedScriptBody.recordingDate === '' || cleanedScriptBody.recordingDate === null) {
+        delete cleanedScriptBody.recordingDate;
+      }
+
       const scriptData = insertScriptSchema.parse({
-        ...scriptBody,
+        ...cleanedScriptBody,
         authorId: req.user.claims.sub,
-        projectId: parseInt(scriptBody.projectId),
+        projectId: parseInt(cleanedScriptBody.projectId),
       });
 
       const script = await storage.createScript(scriptData, topicIds);
@@ -212,6 +221,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const updateData = { ...req.body };
       delete updateData.topicIds;
+
+      // Clean up empty date fields
+      if (updateData.dueDate === '' || updateData.dueDate === null) {
+        delete updateData.dueDate;
+      }
+      if (updateData.recordingDate === '' || updateData.recordingDate === null) {
+        delete updateData.recordingDate;
+      }
 
       const scriptData = insertScriptSchema.partial().parse(updateData);
       const { topicIds } = req.body;

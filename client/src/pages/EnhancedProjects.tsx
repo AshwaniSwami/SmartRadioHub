@@ -92,10 +92,12 @@ export default function EnhancedProjects() {
   };
 
   const filteredScripts = useMemo(() => {
-    // Ensure projectScripts is an array
-    const scriptsArray = Array.isArray(projectScripts) ? projectScripts : [];
+    // Ensure projectScripts is an array, handle null/undefined
+    if (!projectScripts || !Array.isArray(projectScripts)) {
+      return [];
+    }
 
-    let filtered = scriptsArray.filter((script: any) => {
+    let filtered = projectScripts.filter((script: any) => {
       if (statusFilter && statusFilter !== 'all') {
         return script.status === statusFilter;
       }

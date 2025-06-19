@@ -61,19 +61,23 @@ export default function FileUploadZone({
           continue;
         }
 
-        // Create file data for upload
+        // Create file metadata for upload (not the actual file object)
         const fileData = {
           name: file.name,
           size: file.size,
-          type: file.type || 'application/octet-stream',
-          url: URL.createObjectURL(file) // Temporary URL for display
+          type: file.type || 'application/octet-stream'
         };
 
         filesToUpload.push(fileData);
         setUploadProgress(((i + 1) / files.length) * 50); // 50% for processing
       }
 
-      // Upload to server
+      if (filesToUpload.length === 0) {
+        setUploading(false);
+        return;
+      }
+
+      // Upload file metadata to server
       const response = await apiRequest("POST", `/api/projects/${projectId}/files`, {
         files: filesToUpload
       });
