@@ -25,12 +25,12 @@ import LoadingSpinner from "@/components/Common/LoadingSpinner";
 const scriptSchema = z.object({
   title: z.string().min(1, "Title is required"),
   episodeNumber: z.string().optional(),
-  projectId: z.number({ required_error: "Project is required" }),
+  projectId: z.string().min(1, "Project is required"),
   content: z.string().optional(),
   status: z.string().optional(),
   reviewComments: z.string().optional(),
   broadcastDate: z.string().optional(),
-  audioLink: z.string().url().optional().or(z.literal("")),
+  audioLink: z.string().optional(),
   topicIds: z.array(z.number()).optional(),
 });
 
@@ -93,11 +93,11 @@ export default function ScriptEditor() {
   useEffect(() => {
     if (script && isEditing) {
       form.reset({
-        title: script.title,
+        title: script.title || "",
         episodeNumber: script.episodeNumber || "",
-        projectId: script.projectId,
+        projectId: script.projectId?.toString() || "",
         content: script.content || "",
-        status: script.status,
+        status: script.status || "",
         reviewComments: script.reviewComments || "",
         broadcastDate: script.broadcastDate || "",
         audioLink: script.audioLink || "",
@@ -223,8 +223,8 @@ export default function ScriptEditor() {
                         <FormItem>
                           <FormLabel>Project *</FormLabel>
                           <Select 
-                            onValueChange={(value) => field.onChange(parseInt(value))}
-                            value={field.value?.toString()}
+                            onValueChange={field.onChange}
+                            value={field.value}
                           >
                             <FormControl>
                               <SelectTrigger>

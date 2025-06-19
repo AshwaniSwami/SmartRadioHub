@@ -8,7 +8,7 @@ import Landing from "@/pages/Landing";
 import EnhancedLanding from "@/pages/EnhancedLanding";
 import Dashboard from "@/pages/Dashboard";
 import Scripts from "@/pages/Scripts";
-import ScriptEditor from "@/pages/ScriptEditor";
+import SimpleScriptEditor from "@/pages/SimpleScriptEditor";
 import NotFound from "@/pages/not-found";
 import ThemeProvider from "@/components/ThemeProvider";
 
@@ -23,8 +23,8 @@ function Router() {
         <>
           <Route path="/" component={Dashboard} />
           <Route path="/scripts" component={Scripts} />
-          <Route path="/scripts/new" component={ScriptEditor} />
-          <Route path="/scripts/:id/edit" component={ScriptEditor} />
+          <Route path="/scripts/new" component={SimpleScriptEditor} />
+          <Route path="/scripts/:id/edit" component={SimpleScriptEditor} />
         </>
       )}
       <Route component={NotFound} />

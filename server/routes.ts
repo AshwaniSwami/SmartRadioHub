@@ -79,12 +79,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/scripts', isAuthenticated, async (req: any, res) => {
     try {
+      const { topicIds, ...scriptBody } = req.body;
+      
       const scriptData = insertScriptSchema.parse({
-        ...req.body,
+        ...scriptBody,
         authorId: req.user.claims.sub,
+        projectId: parseInt(scriptBody.projectId),
       });
       
-      const { topicIds } = req.body;
       const script = await storage.createScript(scriptData, topicIds);
       
       // Log activity

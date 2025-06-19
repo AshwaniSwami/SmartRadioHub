@@ -111,30 +111,6 @@ export class DatabaseStorage implements IStorage {
     authorId?: string;
     search?: string;
   }): Promise<ScriptWithDetails[]> {
-    const query = db
-      .select({
-        script: {
-          id: scripts.id,
-          title: scripts.title,
-          episodeNumber: scripts.episodeNumber,
-          content: scripts.content,
-          status: scripts.status,
-          projectId: scripts.projectId,
-          authorId: scripts.authorId,
-          createdAt: scripts.createdAt,
-          lastUpdated: scripts.lastUpdated,
-          reviewComments: scripts.reviewComments,
-          broadcastDate: scripts.broadcastDate,
-          audioLink: scripts.audioLink,
-          isArchived: scripts.isArchived,
-        },
-        author: users,
-        project: projects,
-      })
-      .from(scripts)
-      .innerJoin(users, eq(scripts.authorId, users.id))
-      .innerJoin(projects, eq(scripts.projectId, projects.id));
-
     const conditions = [];
     
     if (filters?.status) {
@@ -158,7 +134,15 @@ export class DatabaseStorage implements IStorage {
       );
     }
 
-    const results = await query
+    const results = await db
+      .select({
+        script: scripts,
+        author: users,
+        project: projects,
+      })
+      .from(scripts)
+      .innerJoin(users, eq(scripts.authorId, users.id))
+      .innerJoin(projects, eq(scripts.projectId, projects.id))
       .where(conditions.length > 0 ? and(...conditions) : undefined)
       .orderBy(desc(scripts.lastUpdated));
 
