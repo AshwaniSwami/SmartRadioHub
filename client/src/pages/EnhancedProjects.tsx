@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -31,6 +31,13 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 import LoadingSpinner from "@/components/Common/LoadingSpinner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 export default function EnhancedProjects() {
   const { toast } = useToast();
@@ -44,6 +51,7 @@ export default function EnhancedProjects() {
     name: "",
     description: "",
   });
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -66,23 +74,36 @@ export default function EnhancedProjects() {
   });
 
   const { data: projectScripts = [], isLoading: scriptsLoading } = useQuery<any[]>({
-    queryKey: ["/api/scripts", { projectId: selectedProject?.id }],
-    queryFn: async () => {
-      if (!selectedProject?.id) return [];
-      const result = await apiRequest("GET", `/api/scripts?projectId=${selectedProject.id}`);
-      return Array.isArray(result) ? result : [];
-    },
-    enabled: isAuthenticated && !!selectedProject?.id,
+    queryKey: ['scripts', { projectId: selectedProject?.id }],
+    queryFn: () => apiRequest('GET', `/api/scripts?projectId=${selectedProject?.id}`),
+    enabled: !!selectedProject,
   });
 
-  const { data: serverProjectFiles = [], isLoading: filesLoading } = useQuery<any[]>({
-    queryKey: ["/api/projects", selectedProject?.id, "files"],
-    queryFn: async () => {
-      if (!selectedProject?.id) return [];
-      return await apiRequest("GET", `/api/projects/${selectedProject.id}/files`);
-    },
-    enabled: isAuthenticated && !!selectedProject?.id,
+  // Fetch project files
+  const { data: serverProjectFiles = [], isLoading: filesLoading, refetch: refetchFiles } = useQuery({
+    queryKey: ['project-files', selectedProject?.id],
+    queryFn: () => apiRequest('GET', `/api/projects/${selectedProject?.id}/files`),
+    enabled: !!selectedProject,
   });
+
+  const handleFilesUploaded = (files: any[]) => {
+    // Refetch project files when new files are uploaded
+    refetchFiles();
+  };
+
+  const filteredScripts = useMemo(() => {
+    // Ensure projectScripts is an array
+    const scriptsArray = Array.isArray(projectScripts) ? projectScripts : [];
+
+    let filtered = scriptsArray.filter((script: any) => {
+      if (statusFilter && statusFilter !== 'all') {
+        return script.status === statusFilter;
+      }
+      return true;
+    });
+
+    return filtered;
+  }, [projectScripts, statusFilter]);
 
   const createMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -191,20 +212,6 @@ export default function EnhancedProjects() {
     }
   };
 
-  const handleFilesUploaded = (files: any[]) => {
-    if (selectedProject) {
-      // Invalidate the query to refetch files from server
-      queryClient.invalidateQueries({ 
-        queryKey: ["/api/projects", selectedProject.id, "files"] 
-      });
-      
-      toast({
-        title: "Files uploaded",
-        description: `${files.length} file(s) uploaded successfully to ${selectedProject.name}`,
-      });
-    }
-  };
-
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -231,7 +238,7 @@ export default function EnhancedProjects() {
   return (
     <div className="flex h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <EnhancedSidebar />
-      
+
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
         <div className="bg-white border-b border-slate-200 px-6 py-4">
@@ -240,7 +247,7 @@ export default function EnhancedProjects() {
               <h1 className="text-2xl font-bold text-slate-900">Projects</h1>
               <p className="text-slate-600">Organize your radio content by projects</p>
             </div>
-            
+
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button onClick={resetForm} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
@@ -355,7 +362,7 @@ export default function EnhancedProjects() {
                     </CardContent>
                   </Card>
                 ))}
-                
+
                 {projects.length === 0 && (
                   <div className="text-center py-8">
                     <Folder className="mx-auto h-12 w-12 text-slate-400 mb-3" />
@@ -443,12 +450,27 @@ export default function EnhancedProjects() {
 
                   <TabsContent value="scripts" className="mt-6">
                     <div>
-                      <h3 className="text-lg font-semibold text-slate-900 mb-4">Scripts</h3>
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-semibold text-slate-900">Scripts</h3>
+                        <Select value={statusFilter || "all"} onValueChange={setStatusFilter}>
+                          <SelectTrigger className="w-48">
+                            <SelectValue placeholder="Filter by status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Scripts</SelectItem>
+                            <SelectItem value="draft">Draft</SelectItem>
+                            <SelectItem value="under_review">Under Review</SelectItem>
+                            <SelectItem value="approved">Approved</SelectItem>
+                            <SelectItem value="needs_revision">Needs Revision</SelectItem>
+                            <SelectItem value="recorded">Recorded</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                       {scriptsLoading ? (
                         <LoadingSpinner />
                       ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {Array.isArray(projectScripts) && projectScripts.map((script: any) => (
+                          {Array.isArray(projectScripts) && filteredScripts.map((script: any) => (
                             <Card key={script.id} className="hover:shadow-lg transition-shadow">
                               <CardContent className="p-4">
                                 <div className="flex items-start justify-between mb-3">
@@ -459,7 +481,7 @@ export default function EnhancedProjects() {
                                     {script.status}
                                   </Badge>
                                 </div>
-                                
+
                                 <div className="space-y-2 text-sm text-slate-600">
                                   <div className="flex items-center space-x-2">
                                     <User className="h-4 w-4" />
@@ -488,8 +510,8 @@ export default function EnhancedProjects() {
                               </CardContent>
                             </Card>
                           ))}
-                          
-                          {(!Array.isArray(projectScripts) || projectScripts.length === 0) && (
+
+                          {(!Array.isArray(projectScripts) || filteredScripts.length === 0) && (
                             <div className="col-span-full text-center py-8">
                               <FileText className="mx-auto h-12 w-12 text-slate-400 mb-3" />
                               <h3 className="text-sm font-medium text-slate-900">No scripts yet</h3>

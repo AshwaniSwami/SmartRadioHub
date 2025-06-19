@@ -80,11 +80,15 @@ export default function FileUploadZone({
 
       setUploadProgress(100);
       
-      // Ensure response is an array
+      // Ensure response is an array and has proper structure
       const newFiles = Array.isArray(response) ? response : [];
+      
+      // Update local state
       const allFiles = [...uploadedFiles, ...newFiles];
       setUploadedFiles(allFiles);
-      onFilesUploaded(allFiles);
+      
+      // Notify parent component with new files
+      onFilesUploaded(newFiles);
     } catch (error) {
       console.error('Upload failed:', error);
       alert('Upload failed. Please try again.');

@@ -325,14 +325,15 @@ export class DatabaseStorage implements IStorage {
       // In production, you'd store this in a database and the actual files in object storage
   
       const projectFiles = this.projectFiles.get(projectId) || [];
-      const newFiles = files.map(file => ({
+      const newFiles = files.map((file, index) => ({
         ...file,
-        id: `file_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        id: `file_${projectId}_${Date.now()}_${index}_${Math.random().toString(36).substr(2, 9)}`,
         projectId,
         uploadedAt: new Date().toISOString()
       }));
   
-      this.projectFiles.set(projectId, [...projectFiles, ...newFiles]);
+      const allFiles = [...projectFiles, ...newFiles];
+      this.projectFiles.set(projectId, allFiles);
       return newFiles;
     }
   
