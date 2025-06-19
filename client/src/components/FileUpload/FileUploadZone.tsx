@@ -35,6 +35,11 @@ export default function FileUploadZone({
     const files = Array.from(event.target.files || []);
     if (files.length === 0) return;
 
+    if (uploadedFiles.length + files.length > maxFiles) {
+      alert(`Cannot upload more than ${maxFiles} files total`);
+      return;
+    }
+
     setUploading(true);
     setUploadProgress(0);
 
@@ -49,13 +54,16 @@ export default function FileUploadZone({
           continue;
         }
 
+        // Simulate upload delay for progress
+        await new Promise(resolve => setTimeout(resolve, 200));
+
         const fileUrl = URL.createObjectURL(file);
         
         const uploadedFile: UploadedFile = {
-          id: `file_${Date.now()}_${i}`,
+          id: `file_${Date.now()}_${i}_${Math.random().toString(36).substr(2, 9)}`,
           name: file.name,
           size: file.size,
-          type: file.type,
+          type: file.type || 'application/octet-stream',
           url: fileUrl,
           uploadedAt: new Date().toISOString()
         };
@@ -69,11 +77,14 @@ export default function FileUploadZone({
       onFilesUploaded(allFiles);
     } catch (error) {
       console.error('Upload failed:', error);
+      alert('Upload failed. Please try again.');
     } finally {
       setUploading(false);
       setUploadProgress(0);
+      // Reset the input
+      event.target.value = '';
     }
-  }, [uploadedFiles, onFilesUploaded, maxSize]);
+  }, [uploadedFiles, onFilesUploaded, maxSize, maxFiles]);
 
   const removeFile = (fileId: string) => {
     const updatedFiles = uploadedFiles.filter(f => f.id !== fileId);

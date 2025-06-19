@@ -11,6 +11,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import FileUploadZone from "@/components/FileUpload/FileUploadZone";
 import { 
   Plus, 
   Edit, 
@@ -23,7 +25,9 @@ import {
   User,
   MoreVertical,
   Folder,
-  Upload
+  Upload,
+  File,
+  Download
 } from "lucide-react";
 import { Link } from "wouter";
 import LoadingSpinner from "@/components/Common/LoadingSpinner";
@@ -35,6 +39,7 @@ export default function EnhancedProjects() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<any>(null);
   const [selectedProject, setSelectedProject] = useState<any>(null);
+  const [projectFiles, setProjectFiles] = useState<Record<number, any[]>>({});
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -170,6 +175,28 @@ export default function EnhancedProjects() {
     if (confirm("Are you sure you want to delete this project? This action cannot be undone.")) {
       deleteMutation.mutate(id);
     }
+  };
+
+  const handleFilesUploaded = (files: any[]) => {
+    if (selectedProject) {
+      setProjectFiles(prev => ({
+        ...prev,
+        [selectedProject.id]: files
+      }));
+      
+      toast({
+        title: "Files uploaded",
+        description: `${files.length} file(s) uploaded successfully to ${selectedProject.name}`,
+      });
+    }
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   if (isLoading || projectsLoading) {
@@ -393,72 +420,142 @@ export default function EnhancedProjects() {
                   </div>
                 </div>
 
-                {/* Scripts in Project */}
-                <div>
-                  <h3 className="text-lg font-semibold text-slate-900 mb-4">Scripts</h3>
-                  {scriptsLoading ? (
-                    <LoadingSpinner />
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {projectScripts.map((script: any) => (
-                        <Card key={script.id} className="hover:shadow-lg transition-shadow">
-                          <CardContent className="p-4">
-                            <div className="flex items-start justify-between mb-3">
-                              <h4 className="font-medium text-slate-900 truncate flex-1">
-                                {script.title}
-                              </h4>
-                              <Badge variant={script.status === 'approved' ? 'default' : 'secondary'}>
-                                {script.status}
-                              </Badge>
-                            </div>
-                            
-                            <div className="space-y-2 text-sm text-slate-600">
-                              <div className="flex items-center space-x-2">
-                                <User className="h-4 w-4" />
-                                <span>{script.author?.firstName} {script.author?.lastName}</span>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <Calendar className="h-4 w-4" />
-                                <span>{new Date(script.lastUpdated).toLocaleDateString()}</span>
-                              </div>
-                            </div>
+                {/* Tabs for Scripts and Files */}
+                <Tabs defaultValue="scripts" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="scripts">Scripts</TabsTrigger>
+                    <TabsTrigger value="files">Files</TabsTrigger>
+                  </TabsList>
 
-                            <div className="flex justify-between items-center mt-4">
-                              <Button asChild variant="outline" size="sm">
-                                <Link href={`/scripts/${script.id}`}>
-                                  <Eye className="h-4 w-4 mr-1" />
-                                  View
-                                </Link>
-                              </Button>
-                              <Button asChild variant="ghost" size="sm">
-                                <Link href={`/scripts/${script.id}/edit`}>
-                                  <Edit className="h-4 w-4 mr-1" />
-                                  Edit
+                  <TabsContent value="scripts" className="mt-6">
+                    <div>
+                      <h3 className="text-lg font-semibold text-slate-900 mb-4">Scripts</h3>
+                      {scriptsLoading ? (
+                        <LoadingSpinner />
+                      ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {projectScripts.map((script: any) => (
+                            <Card key={script.id} className="hover:shadow-lg transition-shadow">
+                              <CardContent className="p-4">
+                                <div className="flex items-start justify-between mb-3">
+                                  <h4 className="font-medium text-slate-900 truncate flex-1">
+                                    {script.title}
+                                  </h4>
+                                  <Badge variant={script.status === 'approved' ? 'default' : 'secondary'}>
+                                    {script.status}
+                                  </Badge>
+                                </div>
+                                
+                                <div className="space-y-2 text-sm text-slate-600">
+                                  <div className="flex items-center space-x-2">
+                                    <User className="h-4 w-4" />
+                                    <span>{script.author?.firstName} {script.author?.lastName}</span>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                    <Calendar className="h-4 w-4" />
+                                    <span>{new Date(script.lastUpdated).toLocaleDateString()}</span>
+                                  </div>
+                                </div>
+
+                                <div className="flex justify-between items-center mt-4">
+                                  <Button asChild variant="outline" size="sm">
+                                    <Link href={`/scripts/${script.id}`}>
+                                      <Eye className="h-4 w-4 mr-1" />
+                                      View
+                                    </Link>
+                                  </Button>
+                                  <Button asChild variant="ghost" size="sm">
+                                    <Link href={`/scripts/${script.id}/edit`}>
+                                      <Edit className="h-4 w-4 mr-1" />
+                                      Edit
+                                    </Link>
+                                  </Button>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                          
+                          {projectScripts.length === 0 && (
+                            <div className="col-span-full text-center py-8">
+                              <FileText className="mx-auto h-12 w-12 text-slate-400 mb-3" />
+                              <h3 className="text-sm font-medium text-slate-900">No scripts yet</h3>
+                              <p className="text-sm text-slate-500 mb-4">
+                                Create your first script for this project.
+                              </p>
+                              <Button asChild>
+                                <Link href={`/scripts/new?projectId=${selectedProject.id}`}>
+                                  <Plus className="h-4 w-4 mr-2" />
+                                  Create Script
                                 </Link>
                               </Button>
                             </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                      
-                      {projectScripts.length === 0 && (
-                        <div className="col-span-full text-center py-8">
-                          <FileText className="mx-auto h-12 w-12 text-slate-400 mb-3" />
-                          <h3 className="text-sm font-medium text-slate-900">No scripts yet</h3>
-                          <p className="text-sm text-slate-500 mb-4">
-                            Create your first script for this project.
-                          </p>
-                          <Button asChild>
-                            <Link href={`/scripts/new?projectId=${selectedProject.id}`}>
-                              <Plus className="h-4 w-4 mr-2" />
-                              Create Script
-                            </Link>
-                          </Button>
+                          )}
                         </div>
                       )}
                     </div>
-                  )}
-                </div>
+                  </TabsContent>
+
+                  <TabsContent value="files" className="mt-6">
+                    <div className="space-y-6">
+                      <div>
+                        <h3 className="text-lg font-semibold text-slate-900 mb-4">Project Files</h3>
+                        <FileUploadZone 
+                          onFilesUploaded={handleFilesUploaded}
+                          projectId={selectedProject.id}
+                          maxFiles={20}
+                          maxSize={100 * 1024 * 1024} // 100MB
+                        />
+                      </div>
+
+                      {/* Display uploaded files */}
+                      {projectFiles[selectedProject.id] && projectFiles[selectedProject.id].length > 0 && (
+                        <div>
+                          <h4 className="font-medium text-slate-900 mb-3">
+                            Uploaded Files ({projectFiles[selectedProject.id].length})
+                          </h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {projectFiles[selectedProject.id].map((file: any) => (
+                              <Card key={file.id} className="hover:shadow-md transition-shadow">
+                                <CardContent className="p-4">
+                                  <div className="flex items-start space-x-3">
+                                    <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                      <File className="h-5 w-5 text-white" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <h5 className="font-medium text-slate-900 truncate">{file.name}</h5>
+                                      <p className="text-sm text-slate-500">
+                                        {formatFileSize(file.size)}
+                                      </p>
+                                      <p className="text-xs text-slate-400">
+                                        {new Date(file.uploadedAt).toLocaleDateString()}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <div className="mt-3">
+                                    <Button variant="outline" size="sm" className="w-full">
+                                      <Download className="h-4 w-4 mr-2" />
+                                      Download
+                                    </Button>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {(!projectFiles[selectedProject.id] || projectFiles[selectedProject.id].length === 0) && (
+                        <div className="text-center py-8">
+                          <Upload className="mx-auto h-12 w-12 text-slate-400 mb-3" />
+                          <h3 className="text-sm font-medium text-slate-900">No files uploaded</h3>
+                          <p className="text-sm text-slate-500">
+                            Upload files using the area above to get started.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </TabsContent>
+                </Tabs>
               </div>
             ) : (
               <div className="flex-1 flex items-center justify-center">
@@ -466,7 +563,7 @@ export default function EnhancedProjects() {
                   <FolderOpen className="mx-auto h-16 w-16 text-slate-400 mb-4" />
                   <h3 className="text-lg font-medium text-slate-900 mb-2">Select a project</h3>
                   <p className="text-slate-600">
-                    Choose a project from the left to view its scripts and recordings.
+                    Choose a project from the left to view its scripts and files.
                   </p>
                 </div>
               </div>
