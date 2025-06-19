@@ -25,17 +25,17 @@ export interface IStorage {
   // User operations - required for Replit Auth
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
-  
+
   // Project operations
   getProjects(): Promise<Project[]>;
   createProject(project: InsertProject): Promise<Project>;
   updateProject(id: number, project: Partial<InsertProject>): Promise<Project>;
   deleteProject(id: number): Promise<void>;
-  
+
   // Topic operations
   getTopics(): Promise<Topic[]>;
   createTopic(topic: InsertTopic): Promise<Topic>;
-  
+
   // Script operations
   getScripts(filters?: {
     status?: string;
@@ -47,7 +47,7 @@ export interface IStorage {
   createScript(script: InsertScript, topicIds?: number[]): Promise<Script>;
   updateScript(id: number, script: Partial<InsertScript>, topicIds?: number[]): Promise<Script>;
   deleteScript(id: number): Promise<void>;
-  
+
   // Dashboard stats
   getDashboardStats(): Promise<{
     totalScripts: number;
@@ -58,13 +58,20 @@ export interface IStorage {
     needsRevision: number;
     workflowCounts: Record<string, number>;
   }>;
-  
+
   // Activity logging
   logActivity(activity: InsertActivityLog): Promise<ActivityLog>;
   getRecentActivity(limit?: number): Promise<ActivityLogWithUser[]>;
+
+   // File operations
+   saveProjectFiles(projectId: number, files: any[]): Promise<any[]>;
+   getProjectFiles(projectId: number): Promise<any[]>;
 }
 
 export class DatabaseStorage implements IStorage {
+  // In-memory storage for files (replace with database in production)
+  private projectFiles: Map<number, any[]> | undefined;
+
   // User operations
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
@@ -127,19 +134,19 @@ export class DatabaseStorage implements IStorage {
     search?: string;
   }): Promise<ScriptWithDetails[]> {
     const conditions = [];
-    
+
     if (filters?.status) {
       conditions.push(eq(scripts.status, filters.status));
     }
-    
+
     if (filters?.projectId) {
       conditions.push(eq(scripts.projectId, filters.projectId));
     }
-    
+
     if (filters?.authorId) {
       conditions.push(eq(scripts.authorId, filters.authorId));
     }
-    
+
     if (filters?.search) {
       conditions.push(
         or(
@@ -235,7 +242,7 @@ export class DatabaseStorage implements IStorage {
     if (topicIds !== undefined) {
       // Remove existing topics
       await db.delete(scriptTopics).where(eq(scriptTopics.scriptId, id));
-      
+
       // Add new topics
       if (topicIds.length > 0) {
         await db.insert(scriptTopics).values(
@@ -311,6 +318,33 @@ export class DatabaseStorage implements IStorage {
       user: result.user,
     }));
   }
+
+    // File operations
+    async saveProjectFiles(projectId: number, files: any[]): Promise<any[]> {
+      // For now, we'll store file metadata in memory
+      // In production, you'd store this in a database and the actual files in object storage
+      if (!this.projectFiles) {
+        this.projectFiles = new Map();
+      }
+  
+      const projectFiles = this.projectFiles.get(projectId) || [];
+      const newFiles = files.map(file => ({
+        ...file,
+        id: `file_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        projectId,
+        uploadedAt: new Date().toISOString()
+      }));
+  
+      this.projectFiles.set(projectId, [...projectFiles, ...newFiles]);
+      return newFiles;
+    }
+  
+    async getProjectFiles(projectId: number): Promise<any[]> {
+      if (!this.projectFiles) {
+        this.projectFiles = new Map();
+      }
+      return this.projectFiles.get(projectId) || [];
+    }
 }
 
 export const storage = new DatabaseStorage();

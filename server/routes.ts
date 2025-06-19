@@ -42,6 +42,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // File upload routes
+  app.post('/api/projects/:projectId/files', isAuthenticated, async (req: any, res) => {
+    try {
+      const projectId = parseInt(req.params.projectId);
+      const files = req.body.files;
+
+      // Store files in database or file system
+      const savedFiles = await storage.saveProjectFiles(projectId, files);
+      res.json(savedFiles);
+    } catch (error) {
+      console.error("Error uploading files:", error);
+      res.status(500).json({ message: "Failed to upload files" });
+    }
+  });
+
+  app.get('/api/projects/:projectId/files', isAuthenticated, async (req: any, res) => {
+    try {
+      const projectId = parseInt(req.params.projectId);
+      const files = await storage.getProjectFiles(projectId);
+      res.json(files);
+    } catch (error) {
+      console.error("Error fetching project files:", error);
+      res.status(500).json({ message: "Failed to fetch project files" });
+    }
+  });
+
   // Project routes
   app.get('/api/projects', isAuthenticated, async (req: any, res) => {
     try {
@@ -111,7 +137,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         authorId: authorId as string,
         search: search as string,
       };
-      
+
       const scripts = await storage.getScripts(filters);
       res.json(scripts);
     } catch (error) {
@@ -124,11 +150,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const script = await storage.getScript(id);
-      
+
       if (!script) {
         return res.status(404).json({ message: "Script not found" });
       }
-      
+
       res.json(script);
     } catch (error) {
       console.error("Error fetching script:", error);
@@ -139,15 +165,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/scripts', isAuthenticated, async (req: any, res) => {
     try {
       const { topicIds, ...scriptBody } = req.body;
-      
+
       const scriptData = insertScriptSchema.parse({
         ...scriptBody,
         authorId: req.user.claims.sub,
         projectId: parseInt(scriptBody.projectId),
       });
-      
+
       const script = await storage.createScript(scriptData, topicIds);
-      
+
       // Log activity
       await storage.logActivity({
         userId: req.user.claims.sub,
@@ -156,7 +182,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         entityId: script.id,
         details: `Created script: ${script.title}`,
       });
-      
+
       res.status(201).json(script);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -171,7 +197,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const existingScript = await storage.getScript(id);
-      
+
       if (!existingScript) {
         return res.status(404).json({ message: "Script not found" });
       }
@@ -179,19 +205,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check permissions
       const userRole = req.user.claims.role || 'scriptwriter';
       const userId = req.user.claims.sub;
-      
+
       if (existingScript.authorId !== userId && !['program_manager', 'administrator'].includes(userRole)) {
         return res.status(403).json({ message: "Insufficient permissions" });
       }
 
       const updateData = { ...req.body };
       delete updateData.topicIds;
-      
+
       const scriptData = insertScriptSchema.partial().parse(updateData);
       const { topicIds } = req.body;
-      
+
       const script = await storage.updateScript(id, scriptData, topicIds);
-      
+
       // Log activity
       await storage.logActivity({
         userId: req.user.claims.sub,
@@ -200,7 +226,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         entityId: id,
         details: `Updated script: ${script.title}`,
       });
-      
+
       res.json(script);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -215,7 +241,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const existingScript = await storage.getScript(id);
-      
+
       if (!existingScript) {
         return res.status(404).json({ message: "Script not found" });
       }
@@ -223,13 +249,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check permissions
       const userRole = req.user.claims.role || 'scriptwriter';
       const userId = req.user.claims.sub;
-      
+
       if (existingScript.authorId !== userId && !['administrator'].includes(userRole)) {
         return res.status(403).json({ message: "Insufficient permissions" });
       }
 
       await storage.deleteScript(id);
-      
+
       // Log activity
       await storage.logActivity({
         userId: req.user.claims.sub,
@@ -238,7 +264,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         entityId: id,
         details: `Deleted script: ${existingScript.title}`,
       });
-      
+
       res.status(204).send();
     } catch (error) {
       console.error("Error deleting script:", error);
@@ -260,14 +286,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/projects', isAuthenticated, async (req: any, res) => {
     try {
       const userRole = req.user.claims.role || 'scriptwriter';
-      
+
       if (!['program_manager', 'administrator'].includes(userRole)) {
         return res.status(403).json({ message: "Insufficient permissions" });
       }
 
       const projectData = insertProjectSchema.parse(req.body);
       const project = await storage.createProject(projectData);
-      
+
       // Log activity
       await storage.logActivity({
         userId: req.user.claims.sub,
@@ -276,7 +302,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         entityId: project.id,
         details: `Created project: ${project.name}`,
       });
-      
+
       res.status(201).json(project);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -301,14 +327,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/topics', isAuthenticated, async (req: any, res) => {
     try {
       const userRole = req.user.claims.role || 'scriptwriter';
-      
+
       if (!['program_manager', 'administrator'].includes(userRole)) {
         return res.status(403).json({ message: "Insufficient permissions" });
       }
 
       const topicData = insertTopicSchema.parse(req.body);
       const topic = await storage.createTopic(topicData);
-      
+
       // Log activity
       await storage.logActivity({
         userId: req.user.claims.sub,
@@ -317,7 +343,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         entityId: topic.id,
         details: `Created topic: ${topic.name}`,
       });
-      
+
       res.status(201).json(topic);
     } catch (error) {
       if (error instanceof z.ZodError) {

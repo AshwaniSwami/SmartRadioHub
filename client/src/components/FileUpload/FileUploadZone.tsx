@@ -1,7 +1,9 @@
+
 import { useState, useCallback } from "react";
 import { Upload, File, X, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { apiRequest } from "@/lib/queryClient";
 
 interface FileUploadZoneProps {
   onFilesUploaded: (files: UploadedFile[]) => void;
@@ -35,6 +37,11 @@ export default function FileUploadZone({
     const files = Array.from(event.target.files || []);
     if (files.length === 0) return;
 
+    if (!projectId) {
+      alert("Please select a project first");
+      return;
+    }
+
     if (uploadedFiles.length + files.length > maxFiles) {
       alert(`Cannot upload more than ${maxFiles} files total`);
       return;
@@ -44,7 +51,7 @@ export default function FileUploadZone({
     setUploadProgress(0);
 
     try {
-      const newFiles: UploadedFile[] = [];
+      const filesToUpload = [];
       
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
@@ -54,25 +61,26 @@ export default function FileUploadZone({
           continue;
         }
 
-        // Simulate upload delay for progress
-        await new Promise(resolve => setTimeout(resolve, 200));
-
-        const fileUrl = URL.createObjectURL(file);
-        
-        const uploadedFile: UploadedFile = {
-          id: `file_${Date.now()}_${i}_${Math.random().toString(36).substr(2, 9)}`,
+        // Create file data for upload
+        const fileData = {
           name: file.name,
           size: file.size,
           type: file.type || 'application/octet-stream',
-          url: fileUrl,
-          uploadedAt: new Date().toISOString()
+          url: URL.createObjectURL(file) // Temporary URL for display
         };
 
-        newFiles.push(uploadedFile);
-        setUploadProgress(((i + 1) / files.length) * 100);
+        filesToUpload.push(fileData);
+        setUploadProgress(((i + 1) / files.length) * 50); // 50% for processing
       }
 
-      const allFiles = [...uploadedFiles, ...newFiles];
+      // Upload to server
+      const response = await apiRequest("POST", `/api/projects/${projectId}/files`, {
+        files: filesToUpload
+      });
+
+      setUploadProgress(100);
+      
+      const allFiles = [...uploadedFiles, ...response];
       setUploadedFiles(allFiles);
       onFilesUploaded(allFiles);
     } catch (error) {
@@ -84,7 +92,7 @@ export default function FileUploadZone({
       // Reset the input
       event.target.value = '';
     }
-  }, [uploadedFiles, onFilesUploaded, maxSize, maxFiles]);
+  }, [uploadedFiles, onFilesUploaded, maxSize, maxFiles, projectId]);
 
   const removeFile = (fileId: string) => {
     const updatedFiles = uploadedFiles.filter(f => f.id !== fileId);

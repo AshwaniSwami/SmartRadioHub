@@ -67,7 +67,20 @@ export default function EnhancedProjects() {
 
   const { data: projectScripts = [], isLoading: scriptsLoading } = useQuery<any[]>({
     queryKey: ["/api/scripts", { projectId: selectedProject?.id }],
-    enabled: isAuthenticated && !!selectedProject,
+    queryFn: async () => {
+      if (!selectedProject?.id) return [];
+      return await apiRequest("GET", `/api/scripts?projectId=${selectedProject.id}`);
+    },
+    enabled: isAuthenticated && !!selectedProject?.id,
+  });
+
+  const { data: serverProjectFiles = [], isLoading: filesLoading } = useQuery<any[]>({
+    queryKey: ["/api/projects", selectedProject?.id, "files"],
+    queryFn: async () => {
+      if (!selectedProject?.id) return [];
+      return await apiRequest("GET", `/api/projects/${selectedProject.id}/files`);
+    },
+    enabled: isAuthenticated && !!selectedProject?.id,
   });
 
   const createMutation = useMutation({
@@ -179,10 +192,10 @@ export default function EnhancedProjects() {
 
   const handleFilesUploaded = (files: any[]) => {
     if (selectedProject) {
-      setProjectFiles(prev => ({
-        ...prev,
-        [selectedProject.id]: files
-      }));
+      // Invalidate the query to refetch files from server
+      queryClient.invalidateQueries({ 
+        queryKey: ["/api/projects", selectedProject.id, "files"] 
+      });
       
       toast({
         title: "Files uploaded",
@@ -508,13 +521,13 @@ export default function EnhancedProjects() {
                       </div>
 
                       {/* Display uploaded files */}
-                      {projectFiles[selectedProject.id] && projectFiles[selectedProject.id].length > 0 && (
+                      {serverProjectFiles && serverProjectFiles.length > 0 && (
                         <div>
                           <h4 className="font-medium text-slate-900 mb-3">
-                            Uploaded Files ({projectFiles[selectedProject.id].length})
+                            Uploaded Files ({serverProjectFiles.length})
                           </h4>
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {projectFiles[selectedProject.id].map((file: any) => (
+                            {serverProjectFiles.map((file: any) => (
                               <Card key={file.id} className="hover:shadow-md transition-shadow">
                                 <CardContent className="p-4">
                                   <div className="flex items-start space-x-3">
@@ -544,13 +557,19 @@ export default function EnhancedProjects() {
                         </div>
                       )}
 
-                      {(!projectFiles[selectedProject.id] || projectFiles[selectedProject.id].length === 0) && (
+                      {!filesLoading && (!serverProjectFiles || serverProjectFiles.length === 0) && (
                         <div className="text-center py-8">
                           <Upload className="mx-auto h-12 w-12 text-slate-400 mb-3" />
                           <h3 className="text-sm font-medium text-slate-900">No files uploaded</h3>
                           <p className="text-sm text-slate-500">
                             Upload files using the area above to get started.
                           </p>
+                        </div>
+                      )}
+
+                      {filesLoading && (
+                        <div className="text-center py-8">
+                          <LoadingSpinner />
                         </div>
                       )}
                     </div>
