@@ -42,8 +42,8 @@ export default function FileUploadZone({
       return;
     }
 
-    if (uploadedFiles.length + files.length > maxFiles) {
-      alert(`Cannot upload more than ${maxFiles} files total`);
+    if (files.length > maxFiles) {
+      alert(`Cannot upload more than ${maxFiles} files at once`);
       return;
     }
 
@@ -61,7 +61,7 @@ export default function FileUploadZone({
           continue;
         }
 
-        // Create file metadata for upload (not the actual file object)
+        // Create file metadata for upload
         const fileData = {
           name: file.name,
           size: file.size,
@@ -69,7 +69,7 @@ export default function FileUploadZone({
         };
 
         filesToUpload.push(fileData);
-        setUploadProgress(((i + 1) / files.length) * 50); // 50% for processing
+        setUploadProgress(((i + 1) / files.length) * 50);
       }
 
       if (filesToUpload.length === 0) {
@@ -84,15 +84,12 @@ export default function FileUploadZone({
 
       setUploadProgress(100);
       
-      // Ensure response is an array and has proper structure
+      // Ensure response is an array
       const newFiles = Array.isArray(response) ? response : [];
       
-      // Update local state with all files (existing + new)
-      const allFiles = [...uploadedFiles, ...newFiles];
-      setUploadedFiles(allFiles);
-      
-      // Notify parent component - pass all files for complete refresh
-      onFilesUploaded(allFiles);
+      // Clear local uploaded files and notify parent to refresh
+      setUploadedFiles([]);
+      onFilesUploaded(newFiles);
       
       console.log('Successfully uploaded files:', newFiles);
     } catch (error) {
@@ -104,7 +101,7 @@ export default function FileUploadZone({
       // Reset the input
       event.target.value = '';
     }
-  }, [uploadedFiles, onFilesUploaded, maxSize, maxFiles, projectId]);
+  }, [onFilesUploaded, maxSize, maxFiles, projectId]);
 
   const removeFile = (fileId: string) => {
     const updatedFiles = uploadedFiles.filter(f => f.id !== fileId);
@@ -160,37 +157,7 @@ export default function FileUploadZone({
         </div>
       )}
 
-      {/* Uploaded Files List */}
-      {uploadedFiles.length > 0 && (
-        <div className="space-y-2">
-          <h4 className="font-medium text-gray-900">Uploaded Files</h4>
-          <div className="space-y-2">
-            {uploadedFiles.map((file) => (
-              <div key={file.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <File className="h-5 w-5 text-gray-500" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">{file.name}</p>
-                    <p className="text-xs text-gray-500">
-                      {formatFileSize(file.size)} • {new Date(file.uploadedAt).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeFile(file.id)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      
     </div>
   );
 }

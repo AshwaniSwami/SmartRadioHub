@@ -73,14 +73,15 @@ export default function EnhancedProjects() {
     enabled: isAuthenticated,
   });
 
-  const { data: projectScripts = [], isLoading: scriptsLoading } = useQuery<any[]>({
+  const { data: projectScripts, isLoading: scriptsLoading } = useQuery({
     queryKey: ['scripts', { projectId: selectedProject?.id }],
-    queryFn: () => apiRequest('GET', `/api/scripts?projectId=${selectedProject?.id}`),
+    queryFn: () => selectedProject ? apiRequest('GET', `/api/scripts?projectId=${selectedProject.id}`) : Promise.resolve([]),
     enabled: !!selectedProject,
+    staleTime: 0
   });
 
   // Fetch project files
-  const { data: serverProjectFiles, refetch: refetchFiles } = useQuery({
+  const { data: serverProjectFiles, isLoading: filesLoading, refetch: refetchFiles } = useQuery({
     queryKey: ["project-files", selectedProject?.id],
     queryFn: () => selectedProject ? apiRequest("GET", `/api/projects/${selectedProject.id}/files`) : Promise.resolve([]),
     enabled: !!selectedProject,
@@ -92,18 +93,19 @@ export default function EnhancedProjects() {
     // Refresh the file list immediately
     if (selectedProject) {
       queryClient.invalidateQueries({ queryKey: ["project-files", selectedProject.id] });
-      // Also refetch to get updated data
-      queryClient.refetchQueries({ queryKey: ["project-files", selectedProject.id] });
+      refetchFiles();
     }
   };
 
   const filteredScripts = useMemo(() => {
-    // Ensure projectScripts is an array, handle null/undefined
-    if (!projectScripts || !Array.isArray(projectScripts)) {
+    // Extract the actual scripts array from the response
+    const scriptsArray = Array.isArray(projectScripts) ? projectScripts : (projectScripts?.data || []);
+    
+    if (!Array.isArray(scriptsArray)) {
       return [];
     }
 
-    let filtered = projectScripts.filter((script: any) => {
+    let filtered = scriptsArray.filter((script: any) => {
       if (statusFilter && statusFilter !== 'all') {
         return script.status === statusFilter;
       }
@@ -418,14 +420,14 @@ export default function EnhancedProjects() {
                   <div className="grid grid-cols-4 gap-4 mb-6">
                     <Card>
                       <CardContent className="p-4 text-center">
-                        <div className="text-2xl font-bold text-blue-600">{Array.isArray(projectScripts) ? projectScripts.length : 0}</div>
+                        <div className="text-2xl font-bold text-blue-600">{filteredScripts.length}</div>
                         <div className="text-sm text-slate-600">Total Scripts</div>
                       </CardContent>
                     </Card>
                     <Card>
                       <CardContent className="p-4 text-center">
                         <div className="text-2xl font-bold text-green-600">
-                          {Array.isArray(projectScripts) ? projectScripts.filter((s: any) => s.status === 'approved').length : 0}
+                          {filteredScripts.filter((s: any) => s.status === 'approved').length}
                         </div>
                         <div className="text-sm text-slate-600">Approved</div>
                       </CardContent>
@@ -433,7 +435,7 @@ export default function EnhancedProjects() {
                     <Card>
                       <CardContent className="p-4 text-center">
                         <div className="text-2xl font-bold text-yellow-600">
-                          {Array.isArray(projectScripts) ? projectScripts.filter((s: any) => s.status === 'draft').length : 0}
+                          {filteredScripts.filter((s: any) => s.status === 'draft').length}
                         </div>
                         <div className="text-sm text-slate-600">Drafts</div>
                       </CardContent>
@@ -441,7 +443,7 @@ export default function EnhancedProjects() {
                     <Card>
                       <CardContent className="p-4 text-center">
                         <div className="text-2xl font-bold text-purple-600">
-                          {Array.isArray(projectScripts) ? projectScripts.filter((s: any) => s.status === 'recorded').length : 0}
+                          {filteredScripts.filter((s: any) => s.status === 'recorded').length}
                         </div>
                         <div className="text-sm text-slate-600">Recorded</div>
                       </CardContent>
@@ -478,7 +480,7 @@ export default function EnhancedProjects() {
                         <LoadingSpinner />
                       ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {Array.isArray(projectScripts) && filteredScripts.map((script: any) => (
+                          {filteredScripts.map((script: any) => (
                             <Card key={script.id} className="hover:shadow-lg transition-shadow">
                               <CardContent className="p-4">
                                 <div className="flex items-start justify-between mb-3">
@@ -519,7 +521,7 @@ export default function EnhancedProjects() {
                             </Card>
                           ))}
 
-                          {(!Array.isArray(projectScripts) || filteredScripts.length === 0) && (
+                          {filteredScripts.length === 0 && (
                             <div className="col-span-full text-center py-8">
                               <FileText className="mx-auto h-12 w-12 text-slate-400 mb-3" />
                               <h3 className="text-sm font-medium text-slate-900">No scripts yet</h3>
