@@ -70,7 +70,7 @@ export interface IStorage {
 
 export class DatabaseStorage implements IStorage {
   // In-memory storage for files (replace with database in production)
-  private projectFiles: Map<number, any[]> | undefined;
+  private projectFiles: Map<number, any[]> = new Map();
 
   // User operations
   async getUser(id: string): Promise<User | undefined> {
@@ -323,9 +323,6 @@ export class DatabaseStorage implements IStorage {
     async saveProjectFiles(projectId: number, files: any[]): Promise<any[]> {
       // For now, we'll store file metadata in memory
       // In production, you'd store this in a database and the actual files in object storage
-      if (!this.projectFiles) {
-        this.projectFiles = new Map();
-      }
   
       const projectFiles = this.projectFiles.get(projectId) || [];
       const newFiles = files.map(file => ({
@@ -340,9 +337,6 @@ export class DatabaseStorage implements IStorage {
     }
   
     async getProjectFiles(projectId: number): Promise<any[]> {
-      if (!this.projectFiles) {
-        this.projectFiles = new Map();
-      }
       return this.projectFiles.get(projectId) || [];
     }
 }

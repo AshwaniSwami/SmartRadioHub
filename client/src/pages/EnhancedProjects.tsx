@@ -69,7 +69,8 @@ export default function EnhancedProjects() {
     queryKey: ["/api/scripts", { projectId: selectedProject?.id }],
     queryFn: async () => {
       if (!selectedProject?.id) return [];
-      return await apiRequest("GET", `/api/scripts?projectId=${selectedProject.id}`);
+      const result = await apiRequest("GET", `/api/scripts?projectId=${selectedProject.id}`);
+      return Array.isArray(result) ? result : [];
     },
     enabled: isAuthenticated && !!selectedProject?.id,
   });
@@ -402,14 +403,14 @@ export default function EnhancedProjects() {
                   <div className="grid grid-cols-4 gap-4 mb-6">
                     <Card>
                       <CardContent className="p-4 text-center">
-                        <div className="text-2xl font-bold text-blue-600">{projectScripts.length}</div>
+                        <div className="text-2xl font-bold text-blue-600">{Array.isArray(projectScripts) ? projectScripts.length : 0}</div>
                         <div className="text-sm text-slate-600">Total Scripts</div>
                       </CardContent>
                     </Card>
                     <Card>
                       <CardContent className="p-4 text-center">
                         <div className="text-2xl font-bold text-green-600">
-                          {projectScripts.filter((s: any) => s.status === 'approved').length}
+                          {Array.isArray(projectScripts) ? projectScripts.filter((s: any) => s.status === 'approved').length : 0}
                         </div>
                         <div className="text-sm text-slate-600">Approved</div>
                       </CardContent>
@@ -417,7 +418,7 @@ export default function EnhancedProjects() {
                     <Card>
                       <CardContent className="p-4 text-center">
                         <div className="text-2xl font-bold text-yellow-600">
-                          {projectScripts.filter((s: any) => s.status === 'draft').length}
+                          {Array.isArray(projectScripts) ? projectScripts.filter((s: any) => s.status === 'draft').length : 0}
                         </div>
                         <div className="text-sm text-slate-600">Drafts</div>
                       </CardContent>
@@ -425,7 +426,7 @@ export default function EnhancedProjects() {
                     <Card>
                       <CardContent className="p-4 text-center">
                         <div className="text-2xl font-bold text-purple-600">
-                          {projectScripts.filter((s: any) => s.status === 'recorded').length}
+                          {Array.isArray(projectScripts) ? projectScripts.filter((s: any) => s.status === 'recorded').length : 0}
                         </div>
                         <div className="text-sm text-slate-600">Recorded</div>
                       </CardContent>
@@ -447,7 +448,7 @@ export default function EnhancedProjects() {
                         <LoadingSpinner />
                       ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {projectScripts.map((script: any) => (
+                          {Array.isArray(projectScripts) && projectScripts.map((script: any) => (
                             <Card key={script.id} className="hover:shadow-lg transition-shadow">
                               <CardContent className="p-4">
                                 <div className="flex items-start justify-between mb-3">
@@ -488,7 +489,7 @@ export default function EnhancedProjects() {
                             </Card>
                           ))}
                           
-                          {projectScripts.length === 0 && (
+                          {(!Array.isArray(projectScripts) || projectScripts.length === 0) && (
                             <div className="col-span-full text-center py-8">
                               <FileText className="mx-auto h-12 w-12 text-slate-400 mb-3" />
                               <h3 className="text-sm font-medium text-slate-900">No scripts yet</h3>

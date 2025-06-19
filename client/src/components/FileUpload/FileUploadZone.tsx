@@ -80,7 +80,9 @@ export default function FileUploadZone({
 
       setUploadProgress(100);
       
-      const allFiles = [...uploadedFiles, ...response];
+      // Ensure response is an array
+      const newFiles = Array.isArray(response) ? response : [];
+      const allFiles = [...uploadedFiles, ...newFiles];
       setUploadedFiles(allFiles);
       onFilesUploaded(allFiles);
     } catch (error) {
