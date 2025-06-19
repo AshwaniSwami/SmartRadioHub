@@ -29,6 +29,8 @@ export interface IStorage {
   // Project operations
   getProjects(): Promise<Project[]>;
   createProject(project: InsertProject): Promise<Project>;
+  updateProject(id: number, project: Partial<InsertProject>): Promise<Project>;
+  deleteProject(id: number): Promise<void>;
   
   // Topic operations
   getTopics(): Promise<Topic[]>;
@@ -92,6 +94,19 @@ export class DatabaseStorage implements IStorage {
   async createProject(project: InsertProject): Promise<Project> {
     const [newProject] = await db.insert(projects).values(project).returning();
     return newProject;
+  }
+
+  async updateProject(id: number, project: Partial<InsertProject>): Promise<Project> {
+    const [updatedProject] = await db
+      .update(projects)
+      .set(project)
+      .where(eq(projects.id, id))
+      .returning();
+    return updatedProject;
+  }
+
+  async deleteProject(id: number): Promise<void> {
+    await db.delete(projects).where(eq(projects.id, id));
   }
 
   // Topic operations

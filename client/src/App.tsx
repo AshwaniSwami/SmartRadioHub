@@ -8,6 +8,7 @@ import Landing from "@/pages/Landing";
 import EnhancedLanding from "@/pages/EnhancedLanding";
 import Dashboard from "@/pages/Dashboard";
 import Scripts from "@/pages/Scripts";
+import Projects from "@/pages/Projects";
 import SimpleScriptEditor from "@/pages/SimpleScriptEditor";
 import NotFound from "@/pages/not-found";
 import ThemeProvider from "@/components/ThemeProvider";
@@ -23,6 +24,7 @@ function Router() {
         <>
           <Route path="/" component={Dashboard} />
           <Route path="/scripts" component={Scripts} />
+          <Route path="/projects" component={Projects} />
           <Route path="/scripts/new" component={SimpleScriptEditor} />
           <Route path="/scripts/:id/edit" component={SimpleScriptEditor} />
         </>

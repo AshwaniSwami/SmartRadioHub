@@ -41,7 +41,18 @@ export default function Scripts() {
   });
 
   const scriptsQuery = useQuery({
-    queryKey: ["/api/scripts", { search, status: statusFilter, projectId: projectFilter }],
+    queryKey: ["/api/scripts", search, statusFilter, projectFilter],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (search) params.append('search', search);
+      if (statusFilter && statusFilter !== 'all') params.append('status', statusFilter);
+      if (projectFilter && projectFilter !== 'all') params.append('projectId', projectFilter);
+      
+      const url = `/api/scripts${params.toString() ? '?' + params.toString() : ''}`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Failed to fetch scripts');
+      return response.json();
+    },
     enabled: isAuthenticated,
   });
 
@@ -93,7 +104,7 @@ export default function Scripts() {
                   <SelectValue placeholder="All Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Status</SelectItem>
+                  <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="draft">Draft</SelectItem>
                   <SelectItem value="submitted">Submitted</SelectItem>
                   <SelectItem value="under_review">Under Review</SelectItem>
@@ -109,8 +120,8 @@ export default function Scripts() {
                   <SelectValue placeholder="All Projects" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Projects</SelectItem>
-                  {projects?.map((project: any) => (
+                  <SelectItem value="all">All Projects</SelectItem>
+                  {Array.isArray(projects) && projects.map((project: any) => (
                     <SelectItem key={project.id} value={project.id.toString()}>
                       {project.name}
                     </SelectItem>

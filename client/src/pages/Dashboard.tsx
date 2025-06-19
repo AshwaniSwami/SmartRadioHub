@@ -7,7 +7,7 @@ import TopBar from "@/components/Layout/TopBar";
 import StatsGrid from "@/components/Dashboard/StatsGrid";
 import WorkflowOverview from "@/components/Dashboard/WorkflowOverview";
 import RecentActivity from "@/components/Dashboard/RecentActivity";
-import QuickActions from "@/components/Dashboard/QuickActions";
+import ImprovedQuickActions from "@/components/Dashboard/ImprovedQuickActions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -73,40 +73,13 @@ export default function Dashboard() {
                 </CardHeader>
                 
                 <CardContent>
-                  {/* Filters */}
-                  <div className="flex items-center space-x-4 mb-6">
-                    <Select>
-                      <SelectTrigger className="w-32">
-                        <SelectValue placeholder="All Status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Status</SelectItem>
-                        <SelectItem value="draft">Draft</SelectItem>
-                        <SelectItem value="submitted">Submitted</SelectItem>
-                        <SelectItem value="under_review">Under Review</SelectItem>
-                        <SelectItem value="approved">Approved</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    
-                    <Select>
-                      <SelectTrigger className="w-32">
-                        <SelectValue placeholder="All Projects" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Projects</SelectItem>
-                        <SelectItem value="morning-show">Morning Show</SelectItem>
-                        <SelectItem value="tech-talk">Tech Talk</SelectItem>
-                        <SelectItem value="news-brief">News Brief</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
 
                   {/* Scripts List */}
                   {scriptsLoading ? (
                     <LoadingSpinner />
                   ) : (
                     <div className="space-y-4">
-                      {recentScripts?.slice(0, 5).map((script: any) => (
+                      {Array.isArray(recentScripts) && recentScripts.slice(0, 5).map((script: any) => (
                         <div
                           key={script.id}
                           className="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg border border-gray-100"
@@ -152,7 +125,7 @@ export default function Dashboard() {
             <div className="space-y-6">
               <WorkflowOverview />
               <RecentActivity />
-              <QuickActions />
+              <ImprovedQuickActions />
             </div>
           </div>
         </main>

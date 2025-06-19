@@ -7,6 +7,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Sidebar from "@/components/Layout/Sidebar";
 import TopBar from "@/components/Layout/TopBar";
 import TipTapEditor from "@/components/RichTextEditor/TipTapEditor";
+import FileUploadZone from "@/components/FileUpload/FileUploadZone";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,6 +38,7 @@ export default function SimpleScriptEditor() {
     broadcastDate: "",
     audioLink: "",
     topicIds: [] as number[],
+    attachments: [] as any[],
   });
 
   // Redirect to home if not authenticated
@@ -83,6 +85,7 @@ export default function SimpleScriptEditor() {
         broadcastDate: (script as any)?.broadcastDate || "",
         audioLink: (script as any)?.audioLink || "",
         topicIds: (script as any)?.topics?.map((t: any) => t.id) || [],
+        attachments: (script as any)?.attachments || [],
       });
     }
   }, [script, isEditing]);
@@ -91,12 +94,15 @@ export default function SimpleScriptEditor() {
   const saveMutation = useMutation({
     mutationFn: async (data: any) => {
       const url = isEditing ? `/api/scripts/${scriptId}` : "/api/scripts";
-      const method = isEditing ? "PUT" : "POST";
+      const method = isEditing ? "PATCH" : "POST";
       
-      return await apiRequest(method, url, {
+      const payload = {
         ...data,
-        projectId: parseInt(data.projectId),
-      });
+        projectId: data.projectId ? parseInt(data.projectId) : null,
+        topicIds: data.topicIds || [],
+      };
+
+      return await apiRequest(method, url, payload);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/scripts"] });
@@ -281,6 +287,19 @@ export default function SimpleScriptEditor() {
                     <TipTapEditor
                       content={formData.content}
                       onChange={(content) => handleInputChange("content", content)}
+                    />
+                  </div>
+                </div>
+
+                {/* File Attachments */}
+                <div>
+                  <Label>File Attachments</Label>
+                  <div className="mt-2">
+                    <FileUploadZone
+                      onFilesUploaded={(files) => handleInputChange("attachments", files)}
+                      projectId={formData.projectId ? parseInt(formData.projectId) : undefined}
+                      maxFiles={5}
+                      acceptedTypes={["image/*", "audio/*", "video/*", ".pdf", ".doc", ".docx", ".txt"]}
                     />
                   </div>
                 </div>
