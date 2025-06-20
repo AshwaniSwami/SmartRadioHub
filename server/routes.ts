@@ -183,6 +183,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...cleanedScriptBody,
         authorId: req.user.claims.sub,
         projectId: parseInt(cleanedScriptBody.projectId),
+        broadcastDate: cleanedScriptBody.broadcastDate || null,
       });
 
       const script = await storage.createScript(scriptData, topicIds);

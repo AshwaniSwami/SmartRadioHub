@@ -10,6 +10,7 @@ import EnhancedDashboard from "@/pages/EnhancedDashboard";
 import EnhancedScripts from "@/pages/EnhancedScripts";
 import EnhancedProjects from "@/pages/EnhancedProjects";
 import SimpleScriptEditor from "@/pages/SimpleScriptEditor";
+import SimpleScriptCreator from "@/pages/SimpleScriptCreator";
 import ScriptViewer from "@/pages/ScriptViewer";
 import NotFound from "@/pages/not-found";
 import ThemeProvider from "@/components/ThemeProvider";
@@ -26,7 +27,7 @@ function Router() {
           <Route path="/" component={EnhancedDashboard} />
           <Route path="/scripts" component={EnhancedScripts} />
           <Route path="/projects" component={EnhancedProjects} />
-          <Route path="/scripts/new" component={SimpleScriptEditor} />
+          <Route path="/scripts/new" component={SimpleScriptCreator} />
           <Route path="/scripts/:id" component={ScriptViewer} />
           <Route path="/scripts/:id/edit" component={SimpleScriptEditor} />
         </>
