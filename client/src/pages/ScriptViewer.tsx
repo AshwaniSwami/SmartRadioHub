@@ -55,7 +55,7 @@ export default function ScriptViewer() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
-  const { data: script, isLoading: scriptLoading, error } = useQuery({
+  const { data: script, isLoading: scriptLoading, error } = useQuery<any>({
     queryKey: ["/api/scripts", scriptId],
     enabled: isAuthenticated && !!scriptId,
   });
@@ -98,7 +98,7 @@ export default function ScriptViewer() {
     );
   }
 
-  const canEdit = (user as any)?.id === script.authorId || 
+  const canEdit = (user as any)?.id === script?.authorId || 
                  ['program_manager', 'administrator'].includes((user as any)?.role);
 
   return (
@@ -222,12 +222,14 @@ export default function ScriptViewer() {
               <CardContent>
                 <div className="prose prose-slate max-w-none">
                   {script.content ? (
-                    <div 
-                      dangerouslySetInnerHTML={{ __html: script.content }}
-                      className="text-slate-700 leading-relaxed"
-                    />
+                    <div className="text-slate-700 leading-relaxed whitespace-pre-wrap bg-gray-50 p-4 rounded-lg border">
+                      {script.content}
+                    </div>
                   ) : (
-                    <p className="text-slate-500 italic">No content available</p>
+                    <div className="text-center py-8">
+                      <FileText className="h-12 w-12 text-slate-300 mx-auto mb-3" />
+                      <p className="text-slate-500 italic">No content available for this script</p>
+                    </div>
                   )}
                 </div>
               </CardContent>
