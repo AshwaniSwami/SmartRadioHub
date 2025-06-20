@@ -154,6 +154,9 @@ export const insertScriptSchema = createInsertSchema(scripts).omit({
   id: true,
   submissionDate: true,
   lastUpdated: true,
+}).extend({
+  broadcastDate: z.string().optional().nullable(),
+  projectId: z.number(),
 });
 
 export const insertActivityLogSchema = createInsertSchema(activityLogs).omit({

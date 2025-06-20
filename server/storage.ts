@@ -272,28 +272,44 @@ export class DatabaseStorage implements IStorage {
     needsRevision: number;
     workflowCounts: Record<string, number>;
   }> {
-    const counts = await db
-      .select({
-        status: scripts.status,
-        count: sql<number>`count(*)`,
-      })
-      .from(scripts)
-      .groupBy(scripts.status);
+    try {
+      const counts = await db
+        .select({
+          status: scripts.status,
+          count: sql<number>`count(*)`,
+        })
+        .from(scripts)
+        .groupBy(scripts.status);
 
-    const statusCounts = counts.reduce((acc, row) => {
-      acc[row.status] = Number(row.count);
-      return acc;
-    }, {} as Record<string, number>);
+      const statusCounts = counts.reduce((acc, row) => {
+        acc[row.status] = Number(row.count);
+        return acc;
+      }, {} as Record<string, number>);
 
-    return {
-      totalScripts: counts.reduce((sum, row) => sum + Number(row.count), 0),
-      pendingReview: statusCounts.under_review || 0,
-      approved: statusCounts.approved || 0,
-      recorded: statusCounts.recorded || 0,
-      drafts: statusCounts.draft || 0,
-      needsRevision: statusCounts.needs_revision || 0,
-      workflowCounts: statusCounts,
-    };
+      const totalScripts = counts.reduce((sum, row) => sum + Number(row.count), 0);
+
+      return {
+        totalScripts,
+        pendingReview: statusCounts.under_review || 0,
+        approved: statusCounts.approved || 0,
+        recorded: statusCounts.recorded || 0,
+        drafts: statusCounts.draft || 0,
+        needsRevision: statusCounts.needs_revision || 0,
+        workflowCounts: statusCounts,
+      };
+    } catch (error) {
+      console.error('Error fetching dashboard stats:', error);
+      // Return default stats when there's an error
+      return {
+        totalScripts: 0,
+        pendingReview: 0,
+        approved: 0,
+        recorded: 0,
+        drafts: 0,
+        needsRevision: 0,
+        workflowCounts: {},
+      };
+    }
   }
 
   // Activity logging

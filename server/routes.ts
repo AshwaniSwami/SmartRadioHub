@@ -166,13 +166,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { topicIds, ...scriptBody } = req.body;
 
-      // Clean up empty date fields
+      // Clean up empty date fields and convert broadcastDate appropriately
       const cleanedScriptBody = { ...scriptBody };
       if (cleanedScriptBody.dueDate === '' || cleanedScriptBody.dueDate === null) {
         delete cleanedScriptBody.dueDate;
       }
       if (cleanedScriptBody.recordingDate === '' || cleanedScriptBody.recordingDate === null) {
         delete cleanedScriptBody.recordingDate;
+      }
+      // Handle broadcastDate properly - convert empty string to null for database
+      if (cleanedScriptBody.broadcastDate === '' || cleanedScriptBody.broadcastDate === null || cleanedScriptBody.broadcastDate === undefined) {
+        cleanedScriptBody.broadcastDate = null;
       }
 
       const scriptData = insertScriptSchema.parse({
@@ -368,6 +372,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       console.error("Error creating topic:", error);
       res.status(500).json({ message: "Failed to create topic" });
+    }
+  });
+
+  // File upload routes
+  app.post('/api/projects/:projectId/files', isAuthenticated, async (req: any, res) => {
+    try {
+      const projectId = parseInt(req.params.projectId);
+      const { files } = req.body;
+
+      if (!files || !Array.isArray(files)) {
+        return res.status(400).json({ message: "Files array is required" });
+      }
+
+      // Process files and add metadata
+      const processedFiles = files.map((file, index) => ({
+        id: `file_${Date.now()}_${index}`,
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        url: `/uploads/${file.name}`,
+        uploadedAt: new Date().toISOString()
+      }));
+
+      // Save files to storage
+      const savedFiles = await storage.saveProjectFiles(projectId, processedFiles);
+
+      // Log activity
+      await storage.logActivity({
+        userId: req.user.claims.sub,
+        action: "uploaded",
+        entityType: "files",
+        entityId: projectId,
+        details: `Uploaded ${savedFiles.length} files to project`,
+      });
+
+      res.json(savedFiles);
+    } catch (error) {
+      console.error("Error uploading files:", error);
+      res.status(500).json({ message: "Failed to upload files" });
+    }
+  });
+
+  app.get('/api/projects/:projectId/files', isAuthenticated, async (req: any, res) => {
+    try {
+      const projectId = parseInt(req.params.projectId);
+      const files = await storage.getProjectFiles(projectId);
+      res.json(files);
+    } catch (error) {
+      console.error("Error fetching project files:", error);
+      res.status(500).json({ message: "Failed to fetch project files" });
     }
   });
 

@@ -1,10 +1,20 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { FileText, Clock, CheckCircle, Mic } from "lucide-react";
+import { FileText, Clock, CheckCircle, Mic, TrendingUp, AlertCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import LoadingSpinner from "@/components/Common/LoadingSpinner";
 
+interface DashboardStats {
+  totalScripts: number;
+  pendingReview: number;
+  approved: number;
+  recorded: number;
+  drafts: number;
+  needsRevision: number;
+  workflowCounts: Record<string, number>;
+}
+
 export default function StatsGrid() {
-  const { data: stats, isLoading } = useQuery({
+  const { data: stats, isLoading } = useQuery<DashboardStats>({
     queryKey: ["/api/dashboard/stats"],
   });
 
@@ -54,28 +64,36 @@ export default function StatsGrid() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {statsCards.map((stat, index) => (
-        <Card key={index}>
+        <Card key={index} className="hover:shadow-lg transition-shadow duration-200 border-0 shadow-md">
           <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className={`p-2 ${stat.iconBg} rounded-lg`}>
-                <stat.icon className={`h-5 w-5 ${stat.iconColor}`} />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div className={`p-3 ${stat.iconBg} dark:${stat.iconBg.replace('100', '900')} rounded-xl shadow-sm`}>
+                  <stat.icon className={`h-6 w-6 ${stat.iconColor} dark:${stat.iconColor.replace('600', '300')}`} />
+                </div>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">{stat.title}</p>
-                <p className="text-2xl font-semibold text-gray-900">{stat.value}</p>
-              </div>
+              {stat.title === "Pending Review" && stat.value > 0 && (
+                <AlertCircle className="h-4 w-4 text-yellow-500" />
+              )}
+              {stat.title === "Total Scripts" && (
+                <TrendingUp className="h-4 w-4 text-green-500" />
+              )}
             </div>
             <div className="mt-4">
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{stat.title}</p>
+              <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{stat.value}</p>
+            </div>
+            <div className="mt-4 flex items-center">
               <div className="flex items-center text-sm">
                 <span className={
                   stat.title === "Pending Review" 
-                    ? "text-yellow-600 font-medium" 
-                    : "text-green-600 font-medium"
+                    ? "text-yellow-600 dark:text-yellow-400 font-medium" 
+                    : "text-green-600 dark:text-green-400 font-medium"
                 }>
                   {stat.change}
                 </span>
                 {stat.changeLabel && (
-                  <span className="text-gray-500 ml-2">{stat.changeLabel}</span>
+                  <span className="text-gray-500 dark:text-gray-400 ml-2">{stat.changeLabel}</span>
                 )}
               </div>
             </div>
